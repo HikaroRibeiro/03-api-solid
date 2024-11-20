@@ -1,11 +1,12 @@
 /* eslint-disable prettier/prettier */
 import{ app } from '@/app'
+import { env } from './env'
 
 app
   .listen({
     host: '0.0.0.0',
-    port: 3333,
+    port: env.PORT,
   })
   .then(() => {
-    console.log('🚀 Servidor On-Line!')
+    console.log(`🚀 Servidor On-Line! On Port: ` + env.PORT)
   })
