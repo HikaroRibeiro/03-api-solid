@@ -1,8 +1,7 @@
 import { z } from 'zod'
 import { FastifyRequest, FastifyReply } from 'fastify'
-import { PrismaUsersRepository } from '@/repositories/prisma/prisma-users-repository'
-import { AuthenticationUseCase } from '@/use-cases/authentication'
 import { InvalidCredentialsError } from '@/use-cases/errors/invalid-credentials-error'
+import { makeAuthenticateUseCase } from '@/use-cases/factories/make-authenticate-use-case'
 
 export async function authenticate(
   request: FastifyRequest,
@@ -16,9 +15,7 @@ export async function authenticate(
   const { email, password } = authenticateBodySchema.parse(request.body)
 
   try {
-    const prismaUserRepository = new PrismaUsersRepository() // Caso um dia precise trocar de tipo de repositório basta trocar aqui.
-    const authenticateUseCase = new AuthenticationUseCase(prismaUserRepository)
-
+    const authenticateUseCase = makeAuthenticateUseCase()
     await authenticateUseCase.execute({
       email,
       password,
