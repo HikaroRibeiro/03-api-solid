@@ -4,26 +4,29 @@ import { InMemoryCheckInsRepository } from '@/repositories/in-memory-repository/
 import { CheckInUseCase } from './check-in'
 import { InMemoryGymsRepository } from '@/repositories/in-memory-repository/in-memory-gyms-repository'
 import { Decimal } from '@prisma/client/runtime/library'
+import { MaxNumberOfCheckInError } from './errors/max-number-of-check-ins-error'
+import { MaxDistanceError } from './errors/max-distance-erro'
 
 let checkInsRepository: InMemoryCheckInsRepository
 let gymsRepository: InMemoryGymsRepository
 let sut: CheckInUseCase
 
 describe('Check-In Use Case', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     checkInsRepository = new InMemoryCheckInsRepository()
     gymsRepository = new InMemoryGymsRepository()
 
     sut = new CheckInUseCase(checkInsRepository, gymsRepository)
 
-    gymsRepository.items.push({
+    await gymsRepository.create({
       id: 'gym-01',
       title: 'gym-01',
       description: '',
-      latitude: new Decimal(-22.5019303),
-      longitude: new Decimal(-44.105728),
-      phone: null,
+      phone: '',
+      latitude: -22.5019303,
+      longitude: -44.105728,
     })
+
     vi.useFakeTimers()
   })
 
@@ -32,8 +35,6 @@ describe('Check-In Use Case', () => {
   })
 
   it('should be able to check in.', async () => {
-    vi.setSystemTime(new Date(2024, 11, 21, 6, 0, 0))
-
     const { checkIn } = await sut.execute({
       gymId: 'gym-01',
       userId: 'user-01',
@@ -44,6 +45,7 @@ describe('Check-In Use Case', () => {
   })
 
   it('should not be able to check in twice on the same day.', async () => {
+    vi.setSystemTime(new Date(2024, 11, 21, 6, 0, 0))
     await sut.execute({
       gymId: 'gym-01',
       userId: 'user-01',
@@ -57,7 +59,7 @@ describe('Check-In Use Case', () => {
         userLatitude: -22.5019303,
         userLongitude: -44.105728,
       }),
-    ).rejects.toBeInstanceOf(Error)
+    ).rejects.toBeInstanceOf(MaxNumberOfCheckInError)
   })
 
   it('should be able to check in twice but in different days.', async () => {
@@ -96,6 +98,6 @@ describe('Check-In Use Case', () => {
         userLatitude: -22.5019303,
         userLongitude: -44.105728,
       }),
-    ).rejects.toBeInstanceOf(Error)
+    ).rejects.toBeInstanceOf(MaxDistanceError)
   })
 })
