@@ -30,7 +30,29 @@ export async function authenticate(
       },
     )
 
-    return reply.status(200).send({ token })
+    // Se ficar mais de 7 dias sem logar ele perde o Token do seu usuário.
+    const refreshToken = await reply.jwtSign(
+      {},
+      {
+        sign: {
+          sub: user.id,
+          expiresIn: '7d',
+        },
+      },
+    )
+    // Para trabalhar com coockies instalar 'npm i @fastify/cookie'.
+    // Parâmetro "path: '/'" quais rotas do nosso backend terá acesso a esse coockie.
+    // Parâmetro "secure: true" o coockie será encriptado por HTTPs.
+    // Parâmetro "httpOnly: true" só vai conseguir acessado pelo backend da aplicação.
+    return reply
+      .setCookie('refreshToken', refreshToken, {
+        path: '/',
+        secure: true,
+        sameSite: true,
+        httpOnly: true,
+      })
+      .status(200)
+      .send({ token })
   } catch (err) {
     if (err instanceof InvalidCredentialsError) {
       return reply.status(400).send({
