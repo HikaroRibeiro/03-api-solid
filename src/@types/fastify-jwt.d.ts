@@ -10,6 +10,7 @@ declare module '@fastify/jwt' {
       name: string
       age: number */
       sub: string
+      role: 'ADMIN' | 'MEMBER'
     }
   }
 }

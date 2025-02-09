@@ -4,6 +4,9 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
+// Após criar a linha com "enum" e definir um campo "Role" na tabela "User".
+// Executar "npx prisma migrate dev"
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,11 +16,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  ADMIN
+  MEMBER
+}
+
 model User {
   id            String    @id @default(uuid())
   name          String
   email         String    @unique
   password_hash String
+  role          Role      @default(MEMBER)
   created_at    DateTime  @default(now())
   checkIns      CheckIn[] //Significa vários registros de CheckIn.
 
